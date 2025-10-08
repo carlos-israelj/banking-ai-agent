@@ -11,7 +11,15 @@ except ImportError:
     pass
 
 # API Keys - SIEMPRE con valor por defecto
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCWM_Zl7KJKhz0mIfzmSO7y9o-_mZ8yNFI')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
+if not GEMINI_API_KEY:
+    raise ValueError(
+        "❌ GEMINI_API_KEY no está configurada.\n"
+        "Configúrala como variable de entorno:\n"
+        "export GEMINI_API_KEY='tu_api_key'\n"
+        "O en Render: Settings → Environment → Add Environment Variable"
+    )
 
 # Configuración del modelo
 MODEL_NAME = os.environ.get('MODEL_NAME', 'gemini-2.5-flash')
