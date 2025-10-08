@@ -1,19 +1,40 @@
 """
-Sistema de gestión de conocimiento (RAG) para FAQs.
+Sistema de gestión de conocimiento con RAG REAL.
+Usa embeddings y búsqueda vectorial semántica.
 """
 import json
 import os
 from typing import List, Dict
 from config.settings import FAQS_FILE, TOP_K_RESULTS
 
+# Importar bibliotecas para RAG
+try:
+    from sentence_transformers import SentenceTransformer
+    import chromadb
+    from chromadb.config import Settings
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
+    print("⚠️  Bibliotecas de RAG no disponibles. Usando búsqueda por keywords.")
+
 class KnowledgeBase:
     """
-    Gestiona la base de conocimiento de FAQs del banco.
-    En producción, usaría embeddings y búsqueda vectorial.
+    Gestiona la base de conocimiento con RAG real.
+    
+    PRODUCCIÓN: Usa embeddings + vector database para búsqueda semántica.
+    FALLBACK: Si no hay bibliotecas, usa búsqueda por keywords.
     """
     
-    def __init__(self):
+    def __init__(self, use_embeddings: bool = True):
         self.faqs = self._load_faqs()
+        self.use_embeddings = use_embeddings and RAG_AVAILABLE
+        
+        if self.use_embeddings:
+            print("🔄 Inicializando sistema RAG con embeddings...")
+            self._initialize_rag_system()
+            print("✅ Sistema RAG inicializado correctamente")
+        else:
+            print("⚠️  Usando sistema de búsqueda por keywords (sin embeddings)")
     
     def _load_faqs(self) -> List[Dict]:
         """Carga las FAQs desde el archivo JSON"""
@@ -29,44 +50,138 @@ class KnowledgeBase:
             print(f"❌ Error al cargar FAQs: {e}")
             return []
     
+    def _initialize_rag_system(self):
+        """
+        Inicializa el sistema RAG completo:
+        1. Carga modelo de embeddings
+        2. Crea/carga vector database
+        3. Indexa FAQs si es necesario
+        """
+        # 1. Cargar modelo de embeddings multilingüe
+        print("  📥 Cargando modelo de embeddings...")
+        self.embedding_model = SentenceTransformer(
+            'paraphrase-multilingual-mpnet-base-v2'
+        )
+        # Dimensiones: 768
+        # Soporta: 50+ idiomas incluyendo español
+        
+        # 2. Inicializar ChromaDB (vector database)
+        print("  💾 Inicializando ChromaDB...")
+        self.chroma_client = chromadb.Client(Settings(
+            anonymized_telemetry=False,
+            allow_reset=True
+        ))
+        
+        # 3. Crear colección (o cargarla si existe)
+        try:
+            self.collection = self.chroma_client.get_collection("banking_faqs")
+            print("  ✅ Colección existente cargada")
+        except:
+            print("  🆕 Creando nueva colección...")
+            self.collection = self.chroma_client.create_collection(
+                name="banking_faqs",
+                metadata={"description": "FAQs bancarias con embeddings"}
+            )
+            self._index_faqs()
+    
+    def _index_faqs(self):
+        """
+        Indexa todas las FAQs en la vector database.
+        
+        Proceso:
+        1. Para cada FAQ, combina pregunta + respuesta
+        2. Genera embedding usando sentence-transformers
+        3. Almacena en ChromaDB con metadatos
+        """
+        print(f"  🔄 Indexando {len(self.faqs)} FAQs...")
+        
+        documents = []
+        embeddings = []
+        ids = []
+        metadatas = []
+        
+        for faq in self.faqs:
+            # Combinar pregunta y respuesta para mejor contexto
+            text = f"{faq['question']} {faq['answer']}"
+            
+            # Generar embedding
+            embedding = self.embedding_model.encode(text)
+            
+            documents.append(faq['answer'])
+            embeddings.append(embedding.tolist())
+            ids.append(faq['id'])
+            metadatas.append({
+                'question': faq['question'],
+                'category': faq.get('category', 'general')
+            })
+        
+        # Agregar todo a ChromaDB en batch
+        self.collection.add(
+            documents=documents,
+            embeddings=embeddings,
+            ids=ids,
+            metadatas=metadatas
+        )
+        
+        print(f"  ✅ {len(self.faqs)} FAQs indexadas correctamente")
+    
     def search(self, query: str, top_k: int = TOP_K_RESULTS) -> str:
         """
-        Busca FAQs relevantes para el query del usuario.
+        Busca FAQs relevantes usando búsqueda semántica.
         
-        En producción, esto usaría:
-        1. Embeddings (sentence-transformers o OpenAI embeddings)
-        2. Vector database (ChromaDB, Pinecone, Weaviate)
-        3. Búsqueda por similitud coseno
+        PRODUCCIÓN (con embeddings):
+        1. Convierte el query del usuario a embedding
+        2. Busca en ChromaDB por similitud coseno
+        3. Retorna los top-K más relevantes
         
-        Flujo en producción:
-        ```python
-        from sentence_transformers import SentenceTransformer
-        import chromadb
+        FALLBACK (sin embeddings):
+        - Usa búsqueda por keywords
         
-        # Al inicializar
-        model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
-        client = chromadb.Client()
-        collection = client.create_collection("faqs")
+        Args:
+            query: Pregunta del usuario
+            top_k: Número de resultados a retornar
+            
+        Returns:
+            String formateado con las FAQs más relevantes
+        """
+        if self.use_embeddings:
+            return self._search_with_embeddings(query, top_k)
+        else:
+            return self._search_with_keywords(query, top_k)
+    
+    def _search_with_embeddings(self, query: str, top_k: int) -> str:
+        """
+        Búsqueda semántica usando embeddings y ChromaDB.
         
-        # Indexar FAQs
-        for faq in faqs:
-            embedding = model.encode(faq['question'] + ' ' + faq['answer'])
-            collection.add(
-                embeddings=[embedding.tolist()],
-                documents=[faq['answer']],
-                metadatas=[{"question": faq['question'], "category": faq['category']}],
-                ids=[faq['id']]
-            )
+        Ventajas:
+        - Entiende sinónimos y paráfrasis
+        - No depende de keywords exactas
+        - Búsqueda por significado, no por palabras
+        """
+        # 1. Generar embedding del query
+        query_embedding = self.embedding_model.encode(query)
         
-        # Buscar
-        query_embedding = model.encode(query)
-        results = collection.query(
+        # 2. Buscar en ChromaDB por similitud coseno
+        results = self.collection.query(
             query_embeddings=[query_embedding.tolist()],
             n_results=top_k
         )
-        ```
         
-        Para esta demo, usamos keyword matching simple.
+        # 3. Formatear resultados
+        if not results['documents'] or not results['documents'][0]:
+            return ""
+        
+        formatted_results = []
+        for i, doc in enumerate(results['documents'][0]):
+            question = results['metadatas'][0][i]['question']
+            formatted_results.append(f"**{question}**\n{doc}")
+        
+        return "\n\n".join(formatted_results)
+    
+    def _search_with_keywords(self, query: str, top_k: int) -> str:
+        """
+        Búsqueda simple por keywords (fallback).
+        Usado si no hay embeddings disponibles.
         """
         query_lower = query.lower()
         
@@ -78,7 +193,7 @@ class KnowledgeBase:
             # Buscar en keywords
             for keyword in faq.get('keywords', []):
                 if keyword.lower() in query_lower:
-                    score += 2  # Keywords tienen más peso
+                    score += 2
             
             # Buscar en pregunta
             if any(word in faq['question'].lower() for word in query_lower.split()):
@@ -98,7 +213,6 @@ class KnowledgeBase:
         if not scored_faqs:
             return ""
         
-        # Formatear resultados
         results = []
         for _, faq in scored_faqs[:top_k]:
             results.append(f"**{faq['question']}**\n{faq['answer']}")
@@ -121,7 +235,8 @@ class KnowledgeBase:
                 keywords: List[str]) -> bool:
         """
         Agrega una nueva FAQ a la base de conocimiento.
-        En producción, también actualizaría el índice vectorial.
+        
+        Si hay embeddings activos, también la indexa en ChromaDB.
         """
         try:
             new_faq = {
@@ -131,11 +246,27 @@ class KnowledgeBase:
                 "answer": answer,
                 "keywords": keywords
             }
+            
             self.faqs.append(new_faq)
             
-            # Guardar en archivo
+            # Guardar en archivo JSON
             with open(FAQS_FILE, 'w', encoding='utf-8') as f:
                 json.dump({"faqs": self.faqs}, f, ensure_ascii=False, indent=2)
+            
+            # Si hay embeddings, indexar la nueva FAQ
+            if self.use_embeddings:
+                text = f"{question} {answer}"
+                embedding = self.embedding_model.encode(text)
+                
+                self.collection.add(
+                    documents=[answer],
+                    embeddings=[embedding.tolist()],
+                    ids=[new_faq['id']],
+                    metadatas=[{
+                        'question': question,
+                        'category': category
+                    }]
+                )
             
             return True
         except Exception as e:
@@ -149,11 +280,19 @@ class KnowledgeBase:
             cat = faq.get('category', 'uncategorized')
             categories[cat] = categories.get(cat, 0) + 1
         
-        return {
+        stats = {
             "total_faqs": len(self.faqs),
             "categories": categories,
-            "categories_count": len(categories)
+            "categories_count": len(categories),
+            "rag_enabled": self.use_embeddings
         }
+        
+        if self.use_embeddings:
+            stats["embedding_model"] = "paraphrase-multilingual-mpnet-base-v2"
+            stats["embedding_dimensions"] = 768
+            stats["vector_db"] = "ChromaDB"
+        
+        return stats
 
 
 # Herramienta para búsqueda en la base de conocimiento
@@ -162,7 +301,11 @@ def search_knowledge_base(query: str) -> Dict:
     Tool: search_knowledge_base
     
     Propósito:
-    Buscar información relevante en la base de conocimiento de FAQs.
+    Buscar información relevante en la base de conocimiento usando RAG.
+    
+    Implementación:
+    - Con embeddings: Búsqueda semántica por similitud coseno
+    - Sin embeddings: Búsqueda por keywords (fallback)
     
     Entradas esperadas:
     - query (str): Pregunta o términos de búsqueda del usuario
@@ -171,16 +314,13 @@ def search_knowledge_base(query: str) -> Dict:
     {
         "success": bool,
         "results": str (texto formateado con las FAQs relevantes),
-        "count": int (número de resultados encontrados)
+        "count": int (número de resultados encontrados),
+        "method": str ("embeddings" o "keywords")
     }
     
     Posibles errores:
     - NO_RESULTS: No se encontraron FAQs relevantes
     - SERVICE_ERROR: Error al buscar en la base de datos
-    
-    Manejo del agente:
-    - Si NO_RESULTS: Disculparse y ofrecer contactar con un asesor
-    - Si SERVICE_ERROR: Intentar reformular o sugerir contacto directo
     """
     try:
         kb = KnowledgeBase()
@@ -191,18 +331,21 @@ def search_knowledge_base(query: str) -> Dict:
                 "success": False,
                 "error": "NO_RESULTS",
                 "message": "No encontré información sobre eso en mi base de conocimiento",
-                "count": 0
+                "count": 0,
+                "method": "embeddings" if kb.use_embeddings else "keywords"
             }
         
         return {
             "success": True,
             "results": results,
-            "count": len(results.split('\n\n'))
+            "count": len(results.split('\n\n')),
+            "method": "embeddings" if kb.use_embeddings else "keywords"
         }
         
     except Exception as e:
         return {
             "success": False,
             "error": "SERVICE_ERROR",
-            "message": "Error al buscar en la base de conocimiento"
+            "message": "Error al buscar en la base de conocimiento",
+            "details": str(e)
         }
