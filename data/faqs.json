@@ -1,0 +1,60 @@
+{
+  "faqs": [
+    {
+      "id": "faq_001",
+      "category": "horarios",
+      "question": "¿Cuáles son los horarios de atención?",
+      "answer": "Nuestros horarios de atención son: Lunes a Viernes de 8:00 AM a 5:00 PM, Sábados de 9:00 AM a 1:00 PM. Los domingos permanecemos cerrados. Este chat virtual está disponible 24/7.",
+      "keywords": ["horario", "atencion", "hora", "cuando", "abierto", "cerrado", "funciona"]
+    },
+    {
+      "id": "faq_002",
+      "category": "cuentas",
+      "question": "¿Cómo puedo abrir una cuenta de ahorros?",
+      "answer": "Para abrir una cuenta de ahorros necesitas: 1) Cédula de identidad vigente, 2) Papeleta de votación actualizada, 3) Comprobante de domicilio (planilla de luz o agua), 4) Depósito mínimo de $50. Puedes hacerlo en cualquier sucursal o a través de nuestra app móvil.",
+      "keywords": ["abrir", "cuenta", "ahorros", "requisitos", "documentos", "crear", "nueva"]
+    },
+    {
+      "id": "faq_003",
+      "category": "cuentas",
+      "question": "¿Cuál es la diferencia entre cuenta corriente y cuenta de ahorros?",
+      "answer": "Cuenta de Ahorros: genera intereses, ideal para guardar dinero, tiene límite de retiros. Cuenta Corriente: no genera intereses, permite cheques, retiros ilimitados, ideal para movimientos frecuentes. La cuenta corriente requiere saldo mínimo de $200.",
+      "keywords": ["diferencia", "cuenta corriente", "cuenta ahorros", "corriente", "ahorros", "que es"]
+    },
+    {
+      "id": "faq_004",
+      "category": "tasas",
+      "question": "¿Qué tasa de interés ofrecen en cuentas de ahorro?",
+      "answer": "La tasa de interés actual para cuentas de ahorro es del 2.5% anual. Para montos mayores a $10,000 ofrecemos tasas preferenciales de hasta 3.5% anual. Los intereses se acreditan mensualmente.",
+      "keywords": ["tasa", "interes", "rendimiento", "ganancia", "ahorro", "porcentaje"]
+    },
+    {
+      "id": "faq_005",
+      "category": "tarjetas",
+      "question": "¿Cómo solicitar una tarjeta de crédito?",
+      "answer": "Puedes solicitar una tarjeta de crédito mediante: 1) Nuestra app móvil, 2) En cualquier sucursal, 3) Por este chat (te guiaré en el proceso). Requisitos: ingresos mínimos de $800/mes, historial crediticio positivo, y ser mayor de edad. Respuesta en 48-72 horas.",
+      "keywords": ["tarjeta", "credito", "solicitar", "requisitos", "pedir", "aplicar"]
+    },
+    {
+      "id": "faq_006",
+      "category": "transferencias",
+      "question": "¿Cuánto cobran por transferencias?",
+      "answer": "Nuestras tarifas de transferencia: Dentro del banco: GRATIS. A otros bancos nacionales: $2.00 por transacción. Transferencias internacionales: desde $25 según el país destino. Las transferencias entre tus propias cuentas siempre son gratuitas.",
+      "keywords": ["comision", "transferencia", "costo", "precio", "cargo", "tarifa", "cobra"]
+    },
+    {
+      "id": "faq_007",
+      "category": "seguros",
+      "question": "¿Qué tipos de seguros ofrecen?",
+      "answer": "Ofrecemos: Seguro de Vida (desde $10/mes), Seguro de Auto (desde $35/mes), Seguro de Hogar (desde $15/mes), Seguro de Salud (desde $45/mes), y Seguro de Desempleo (desde $8/mes). Todos con coberturas personalizables según tus necesidades.",
+      "keywords": ["seguro", "poliza", "cobertura", "proteccion", "tipos"]
+    },
+    {
+      "id": "faq_008",
+      "category": "consultas",
+      "question": "¿Cómo consultar mi saldo?",
+      "answer": "Puedes consultar tu saldo de 4 formas: 1) App móvil o web de banca en línea, 2) Cajeros automáticos, 3) Marcando *123# desde tu celular, 4) Por este chat (necesitas autenticarte primero). El método más rápido es la app.",
+      "keywords": ["saldo", "consultar", "ver", "balance", "dinero", "cuanto", "tengo"]
+    }
+  ]
+}
