@@ -55,6 +55,41 @@
       "question": "¿Cómo consultar mi saldo?",
       "answer": "Puedes consultar tu saldo de 4 formas: 1) App móvil o web de banca en línea, 2) Cajeros automáticos, 3) Marcando *123# desde tu celular, 4) Por este chat (necesitas autenticarte primero). El método más rápido es la app.",
       "keywords": ["saldo", "consultar", "ver", "balance", "dinero", "cuanto", "tengo"]
+    },
+    {
+      "id": "faq_009",
+      "category": "emergencias",
+      "question": "¿Qué hago si me robaron mi tarjeta?",
+      "answer": "🚨 URGENTE: Bloquea tu tarjeta INMEDIATAMENTE llamando al 1-800-BANCO-24 (disponible 24/7) o desde la app móvil en Menú → Tarjetas → Bloquear. También puedes hacerlo aquí mismo. No serás responsable de cargos fraudulentos realizados después del reporte. ¿Necesitas que te ayude a bloquearla ahora?",
+      "keywords": ["robo", "robaron", "robada", "perdi", "perdida", "extraviada", "bloquear", "tarjeta", "fraude"]
+    },
+    {
+      "id": "faq_010",
+      "category": "prestamos",
+      "question": "¿Cómo puedo solicitar un préstamo personal?",
+      "answer": "Ofrecemos préstamos personales desde $1,000 hasta $50,000 con tasas desde 9.5% anual. Requisitos: 1) Ingresos mínimos $600/mes, 2) Historial crediticio positivo, 3) Antigüedad laboral mínima 6 meses. Puedes solicitarlo en sucursal, app móvil, o por este chat. Respuesta en 48 horas.",
+      "keywords": ["prestamo", "credito", "dinero", "solicitar", "pedir", "financiamiento"]
+    },
+    {
+      "id": "faq_011",
+      "category": "inversiones",
+      "question": "¿Qué opciones de inversión tienen?",
+      "answer": "Tenemos varias opciones: 1) Pólizas de acumulación (4.5% anual), 2) Fondos de inversión (rendimiento variable), 3) Depósitos a plazo fijo (desde 5% anual según plazo), 4) Bonos del estado. El monto mínimo es $1,000. Un asesor puede ayudarte a elegir según tu perfil de riesgo.",
+      "keywords": ["inversion", "invertir", "rendimiento", "deposito plazo", "fondo", "interes"]
+    },
+    {
+      "id": "faq_012",
+      "category": "tarjetas",
+      "question": "¿Cómo cambio el PIN de mi tarjeta?",
+      "answer": "Puedes cambiar tu PIN de 3 formas: 1) En cualquier cajero automático del banco (Opción 'Cambiar PIN'), 2) Desde la app móvil en Tarjetas → Configuración → Cambiar PIN, 3) En cualquier sucursal con tu cédula. El cambio es inmediato. Por seguridad, no uses fechas de nacimiento ni secuencias como 1234.",
+      "keywords": ["cambiar", "pin", "clave", "contraseña", "codigo", "tarjeta"]
+    },
+    {
+      "id": "faq_013",
+      "category": "reclamos",
+      "question": "¿Cómo presentar una queja o reclamo?",
+      "answer": "Puedes presentar quejas por: 1) Esta plataforma (te guiaré), 2) Correo: reclamos@banconacional.com.ec, 3) Teléfono: 1-800-BANCO-24, 4) En sucursal con el oficial de atención. Responderemos en máximo 15 días hábiles. Si no quedas satisfecho, puedes escalar a la Superintendencia de Bancos.",
+      "keywords": ["queja", "reclamo", "problema", "inconformidad", "reclamar", "quejar"]
     }
   ]
 }
